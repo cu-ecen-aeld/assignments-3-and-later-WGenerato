@@ -6,7 +6,7 @@
 #include <pthread.h>
 // Optional: use these functions to add debug or error prints to your application
 #define DEBUG_LOG(msg,...)
-#define DEBUG_LOG(msg,...) printf("threading: " msg "\n" , ##__VA_ARGS__)
+//#define DEBUG_LOG(msg,...) printf("threading: " msg "\n" , ##__VA_ARGS__)
 #define ERROR_LOG(msg,...) printf("threading ERROR: " msg "\n" , ##__VA_ARGS__)
 
 void* threadfunc(void* thread_param)
@@ -14,7 +14,7 @@ void* threadfunc(void* thread_param)
 
     // TODO: wait, obtain mutex, wait, release mutex as described by thread_data structure
     // hint: use a cast like the one below to obtain thread arguments from your parameter
-    struct thread_data* thread_func_args = (struct thread_data *) thread_param;
+     thread_data* thread_func_args = (thread_data*)thread_param;
     
     usleep(thread_func_args->wait_to_obtain_ms * 1000); // Sleep for wait_to_obtain_ms milliseconds
     
@@ -55,7 +55,7 @@ fprintf(stderr, "Failed to allocate memory\n");
     
 
     
- if (pthread_create(thread, NULL, thread_func, data) != 0) {
+ if (pthread_create(thread, NULL, threadfunc, data) != 0) {
         fprintf(stderr, "Error creating thread\n");
         free(data);
         return false;

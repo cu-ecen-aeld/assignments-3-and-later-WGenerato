@@ -1,6 +1,6 @@
 
 CC := gcc
-CFLAGS := -Wall -Werror
+
 
 
 ifdef CROSS_COMPILE
