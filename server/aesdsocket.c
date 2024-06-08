@@ -34,6 +34,7 @@ void handle_signal(int signal) {
             remove(FILE_PATH);
         }
         closelog();
+        remove(FILE_PATH);
         exit(EXIT_SUCCESS);
     }
 }
