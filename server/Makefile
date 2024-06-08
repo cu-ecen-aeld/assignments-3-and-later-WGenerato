@@ -4,6 +4,7 @@ CFLAGS = -Wall -Wextra -Werror
 TARGET = aesdsocket
 SRCS = aesdsocket.c
 OBJS = $(SRCS:.c=.o)
+DESTINATION = /var/tmp/aesdsocketdata
 
 .PHONY: all clean
 
@@ -16,5 +17,5 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET) $(DESTINATION)
 

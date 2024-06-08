@@ -7,18 +7,18 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <signal.h>
 #include <syslog.h>
-#include <errno.h>
-
-
+#include <getopt.h>
+#include <sys/stat.h>
 #define PORT 9000
 #define BUFFER_SIZE 1024
 #define FILE_PATH "/var/tmp/aesdsocketdata"
 
-int sockfd;
-int new_sockfd;
-FILE *file;
+int sockfd = -1;
+int new_sockfd = -1;
+FILE *file = NULL;
 
 void handle_signal(int signal) {
     if (signal == SIGINT || signal == SIGTERM) {
@@ -38,22 +38,75 @@ void handle_signal(int signal) {
     }
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     struct sockaddr_in server_addr, client_addr;
     socklen_t client_len = sizeof(client_addr);
     char buffer[BUFFER_SIZE];
     char client_ip[INET_ADDRSTRLEN];
     ssize_t bytes_read;
-    //size_t len;
     char *line = NULL;
     size_t linecap = 0;
+    
+    int daemonize = 0;
+    int option;
+
+    // Parse command-line arguments
+    while ((option = getopt(argc, argv, "d")) != -1) {
+        switch (option) {
+        case 'd':
+            daemonize = 1;
+            break;
+        default:
+            fprintf(stderr, "Usage: %s [-d]\n", argv[0]);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // Daemonize if -d ion is present
+    if (daemonize) {
+        pid_t pid = fork();
+        if (pid < 0) {
+            perror("fork");
+            exit(EXIT_FAILURE);
+        } else if (pid > 0) {
+            // Parent process
+            exit(EXIT_SUCCESS);
+        }
+
+        // Child process
+        umask(0); // Reset file mode creation mask
+
+        // Create a new session
+        if (setsid() < 0) {
+            perror("setsid");
+            exit(EXIT_FAILURE);
+        }
+
+        // Change the working directory to root
+        if (chdir("/") < 0) {
+            perror("chdir");
+            exit(EXIT_FAILURE);
+        }
+
+        // Close standard file descriptors
+        close(STDIN_FILENO);
+        close(STDOUT_FILENO);
+        close(STDERR_FILENO);
+    }
+
+
+
 
     // Open syslog
     openlog("aesdsocket", LOG_PID | LOG_CONS, LOG_USER);
 
     // Handle signals for graceful exit
-    signal(SIGINT, handle_signal);
-    signal(SIGTERM, handle_signal);
+    struct sigaction sa;
+    sa.sa_handler = handle_signal;
+    sa.sa_flags = 0;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGTERM, &sa, NULL);
 
     // Create socket
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -128,8 +181,13 @@ int main() {
             }
         }
 
+        if (bytes_read < 0) {
+            syslog(LOG_ERR, "Recv failed: %s", strerror(errno));
+        }
+
         // Close the connection
         close(new_sockfd);
+        new_sockfd = -1;
         fclose(file);
         file = NULL;
 
