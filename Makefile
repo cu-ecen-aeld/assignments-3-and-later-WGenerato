@@ -1,26 +1,22 @@
-# Define the compiler and flags
+# Define the cross-compiler and flags
+CROSS_COMPILE := /home/tt20/aesd-assignment-4/buildroot/output/host/bin/aarch64-buildroot-linux-uclibc-
 CC := $(CROSS_COMPILE)gcc
 CFLAGS := -Wall -Werror
 TARGET := aesdsocket
-
-# Define the source directory
-SRC_DIR := server
 
 # Default target to build the executable
 all: $(TARGET)
 
 # Rule to build the executable
-$(TARGET): $(SRC_DIR)/$(TARGET).c
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRC_DIR)/$(TARGET).c
-
-# Install target to copy the executable to the target directory
-install: $(TARGET)
-	install -D $(TARGET) $(DESTDIR)/usr/bin/$(TARGET)
+$(TARGET): server/$(TARGET).c
+	@echo "Using compiler: $(CC)"
+	@echo "Using flags: $(CFLAGS)"
+	$(CC) $(CFLAGS) -o $(TARGET) server/$(TARGET).c
 
 # Clean target to remove the executable
 clean:
 	rm -f $(TARGET)
 
 # Declare the phony targets
-.PHONY: all clean install
+.PHONY: all clean
 
