@@ -1,20 +1,19 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -Werror
+# Define the compiler and flags
+CC := $(CROSS_COMPILE)gcc
+CFLAGS := -Wall -Werror
+TARGET := aesdsocket
 
-TARGET = aesdsocket
-SRCS = aesdsocket.c
-OBJS = $(SRCS:.c=.o)
-DESTINATION = /var/tmp/aesdsocketdata
-
-.PHONY: all clean
-
+# Default target to build the executable
 all: $(TARGET)
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+# Rule to build the executable
+$(TARGET): server/$(TARGET).c
+	$(CC) $(CFLAGS) -o $(TARGET) server/$(TARGET).c
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
+# Clean target to remove the executable
 clean:
-	rm -f $(OBJS) $(TARGET) $(DESTINATION)
+	rm -f $(TARGET)
+
+# Declare the phony targets
+.PHONY: all clean
+
