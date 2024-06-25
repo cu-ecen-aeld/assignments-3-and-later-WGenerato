@@ -7,8 +7,8 @@ TARGET := aesdsocket
 all: $(TARGET)
 
 # Rule to build the executable
-$(TARGET): server/$(TARGET).c
-	$(CC) $(CFLAGS) -o $(TARGET) server/$(TARGET).c
+$(TARGET): $(TARGET).c
+	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).c
 
 # Clean target to remove the executable
 clean:
